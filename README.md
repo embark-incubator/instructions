@@ -1,8 +1,8 @@
-# EmbArk Skills for Claude Code
+# EmbArk Skills
 
-A collection of [Claude Code](https://docs.anthropic.com/en/docs/claude-code) skills, agents, and instructions that integrate [EmbArk](https://embark.labs.jb.gg/) — a semantic code search CLI — into your AI coding workflow.
+A collection of skills, agents, and instructions that integrate [EmbArk](https://embark.labs.jb.gg/) — a semantic code search CLI — into your AI coding workflow.
 
-EmbArk lets Claude search your codebase by meaning, not just keywords. These extensions make that integration seamless.
+EmbArk lets your coding agent search your codebase by meaning, not just keywords. These extensions make that integration seamless.
 
 ## Install EmbArk
 
@@ -45,14 +45,4 @@ Ready-made `CLAUDE.md` snippets that teach Claude to use EmbArk automatically. P
 
 ## Usage
 
-Copy the skills or instructions you need into your project's `.claude/` directory, or reference them from your Claude Code settings.
-
-For example, to add the search instruction to a project:
-
-```bash
-cat instructions/embark-instructions.md >> /path/to/your/project/CLAUDE.md
-```
-
-## License
-
-JetBrains
+Call `embark setup-agent --help` to learn how to install it into the agent or install it manually by copying.
