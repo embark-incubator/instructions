@@ -10,8 +10,6 @@ It finds code by meaning, not just keywords.
 ```bash
 embark search "<detailed and descriptive query>"
 embark search -p <path> "<query>"
-embark search --limit 10 "<query>"
-embark search --reranker "<query>"
 ```
 
 ### Query Tips

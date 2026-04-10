@@ -23,8 +23,6 @@ You MUST use `embark search` as your PRIMARY and DEFAULT method for all code sea
 ```bash
 embark search "<detailed and descriptive query>"
 embark search -p <path> "<query>"
-embark search --limit 10 "<query>"
-embark search --reranker "<query>"
 ```
 
 ### Query Tips
