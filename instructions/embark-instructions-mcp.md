@@ -12,3 +12,4 @@ This tool can search for code snippets related in meaning to the search query an
 - Before making changes to understand the context and impact.
 
 Use this tool proactively when you need to understand code structure or locate relevant implementations.
+EACH QUERY MUST BE A QUESTION.
