@@ -37,7 +37,7 @@ embark search "<code chunk that was changed>" --reranker
 # Find callers of a modified function
 embark search "calls to <function name> to understand impact" --reranker
 
-# Find related test files
+# Find related test files in the "test/" directory (path must be relative to the project root)
 embark search -p test "tests for <feature being modified>"
 ```
 

@@ -20,6 +20,7 @@ This tool can search for code snippets related in meaning to the search query an
 - The tool optionally takes the `pathFilter` parameter to narrow the search to a specific directory or file:
     - Using `pathFilter` dramatically improves search relevance and precision.
     - Semantic search without path constraints might return irrelevant results from unrelated modules.
+    - Must be a path relative to the project root.
     - If not provided, the whole project is searched.
 
 ### Examples:

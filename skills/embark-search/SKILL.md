@@ -12,7 +12,7 @@ Use `embark search` to find code by meaning, not just keywords. If it's not inst
 ```bash
 embark search "<detailed and descriptive query>"
 embark search "<code snippet>" # find similar snippets
-embark search -p <path> "<query>"
+embark search -p <path> "<query>"  # <path> must be relative to the project root
 ```
 
 ## Query Tips
