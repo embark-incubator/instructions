@@ -1,11 +1,13 @@
 ---
 name: embark-search
 description: "Explore and understand unfamiliar codebases using semantic code search"
+argument-hint: query
+
 ---
 
-# EmbArk Semantic Code Search
+# Semantic Code Search
 
-Use `embark search` to find code by meaning, not just keywords. If it's not installed use embark-install skill.
+Use `embark search` to find code snippets by meaning, not just keywords. If it's not installed use embark-install skill.
 
 ## Usage
 
