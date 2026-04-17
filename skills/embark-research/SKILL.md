@@ -23,7 +23,7 @@ Semantic code search that finds code by meaning, not just exact keywords.
 
 ```bash
 embark search "<descriptive query>" [path]
-embark search -p <path> "<query>" --limit 10
+embark search -p <path> "<query>" --limit 10  # <path> must be relative to the project root
 embark search "<query>" --reranker # improve search results
 embark search --json "<query>"  # For structured output
 ```
@@ -51,7 +51,7 @@ embark history --json "<query>"  # For structured output
 ## Research Workflow
 
 1. **Start broad**: Use `embark search` with general terms to understand the landscape
-2. **Narrow down**: Add path filters (`-p`) once you identify relevant directories
+2. **Narrow down**: Add path filters (`-p`, relative to the project root) once you identify relevant directories
 3. **Check history**: Use `embark history` to understand why code was written a certain way
 4. **Read the code**: Once you find relevant files, read them to understand the details
 
