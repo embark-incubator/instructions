@@ -1,1 +1,17 @@
-Search for code using Embark semantic search in the specified repository or repositories. This tool performs AI-powered semantic code search that understands code meaning and context, not just keyword matching. It finds relevant code even when exact terms differ. For best results, use detailed, descriptive queries that explain what you are looking for in natural language (e.g., "function that validates user email addresses and returns boolean" rather than just "email"). Returns a ranked list of file paths and code snippets with line numbers.
+Semantic code search over the indexed codebase. Takes a natural-language question, returns a ranked list of code snippets (file path, line numbers, code). Ranking considers semantic meaning AND symbol / file / directory names — you do not need to know the exact names to find the code.
+
+PREFERRED FIRST STEP when you know the concept or behaviour but not the exact symbols, especially on an unfamiliar codebase. One focused semantic search is typically faster than enumerating files or spawning a research subagent.
+
+Examples of questions this tool answers well:
+- "Where is the request timeout configured for outbound HTTP calls?"
+- "Which function parses URL query parameters and how does it handle empty values?"
+- "How does the worker retry failed jobs after a timeout?"
+
+Decision boundary with other search tools:
+- Known exact symbol / string / import / regex → use Grep (deterministic and faster).
+- Enumerate files by name or extension → use Glob.
+- Already have the file path → use Read.
+- One or a few focused questions could answer the need → use this tool.
+- Genuinely open-ended research requiring many rounds of searching and synthesis → spawn the Explore/Task subagent; optionally seed it with one call to this tool first.
+
+If a call returns nothing useful, do not abandon the tool. Retry with a reformulation (different vocabulary, no pathFilter, or split a compound question). Fall back to Grep / Glob / Explore only after 2–3 reformulations still fail.

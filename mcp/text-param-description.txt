@@ -1,1 +1,19 @@
-The text/code to search for. Use clear, focused natural language queries that describe a single concept or intent. Good examples: "function that validates user email addresses and returns boolean", "error handling middleware for HTTP requests with logging", "React component that renders a modal dialog with close button". Avoid single words like "email" or "error", and avoid keyword-style queries that just concatenate terms, e.g. "product composite REST controller integration service reviews productId openapi tests". If needed, split complex searches into multiple queries instead of combining everything into one.
+A single specific natural-language question describing ONE concept or behaviour to find. Phrase it the way you would ask a teammate.
+
+A good query carries two things in one sentence:
+1. WHAT you are looking for — the concept / behaviour / component.
+2. WHY — the task or change you are preparing. Optional, but a short purpose clause at the end sharpens ranking.
+
+Good:
+- "Where is the JWT validated before it reaches the controller? I need to add an audience check."
+- "Which function parses URL query parameters and how does it handle empty values?"
+- "How does the worker retry failed jobs after a timeout — I want to change the backoff policy."
+- "Where is the class that models a user profile defined?"
+
+Bad — do NOT do this:
+- Single words / short keywords: "email", "auth", "timeout".
+- Keyword bags: "product composite REST controller integration service reviews productId openapi tests".
+- Symbol-only queries: "MyFunction", "class User". Use Grep for exact symbol lookups.
+- Multiple-intent questions joined with "and" — issue separate calls.
+
+If you need to find several different things, issue several focused calls, each asking ONE question.

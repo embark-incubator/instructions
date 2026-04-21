@@ -1,1 +1,16 @@
-The path filter to restrict search to specific directories or a file. This helps narrow down search results to relevant parts of the codebase. Must be a path relative to the project root. If not provided, the whole project is searched. Examples: "path/to/module", "path/to/module/submodule", "path/to/file/example.kt".
+Optional. A path RELATIVE to the project root, used to scope the search to a subdirectory or single file. Omit or leave empty to search the whole project.
+
+Rules:
+- Must be relative. Do NOT pass absolute paths ("/testbed/...", "/Users/..."), leading slashes, or shell-style values ("*", "./", ".").
+- No wildcards — the filter is a path prefix or file path, not a glob.
+
+When to set it:
+- You have evidence from the task description or a prior search that the relevant code lives under a specific directory or file.
+
+When NOT to set it:
+- You have no prior evidence of the right location — search unfiltered so the ranker sees the whole corpus. Guessing a directory and being wrong silently hides all relevant results.
+
+Examples:
+- "src/auth"                              — scope to a directory subtree
+- "services/payments/stripe_client.py"    — scope to a single file
+- ""  (or omit)                           — search the whole project
