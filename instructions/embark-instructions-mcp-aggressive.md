@@ -1,28 +1,42 @@
 # Tools
 
-## Semantic Code Search (EmbArk)
+## Semantic Code Search: `code_search` (EmbArk)
 
-You have access to the EmbArk MCP `code_search` tool for searching the codebase semantically.
-This tool can search for code snippets related in meaning to the search query and search objective.
+The `code_search` MCP tool performs semantic search over the indexed codebase. On any code-search task where you know the concept, behaviour, or feature but NOT the exact symbol, `code_search` is MANDATORY and comes FIRST.
 
-### MANDATORY: Always use EmbArk for code search
+### Hard ordering rules
 
-You MUST use the `code_search` tool as your PRIMARY and DEFAULT method for all code search operations. Do NOT use grep, ripgrep, find, or any other text-based search tool when looking for code. EmbArk semantic search is strictly superior to keyword-based search — it understands code meaning, context, and intent.
+On a concept-level code-search task you MUST:
+1. Call `code_search` with a focused natural-language question FIRST.
+2. Retry with a reformulation if the first call misses (2–3 attempts).
+3. Escalate to Explore / Task / broad Grep ONLY after reformulations still fail.
 
-**NEVER use grep or text search for**:
-- Finding function/class/variable definitions or usages
-- Understanding how a feature is implemented
-- Locating code related to a concept or behavior
-- Exploring unfamiliar parts of the codebase
-- Searching before making any code changes
+Skipping `code_search` and jumping straight to Explore, Task, Glob-sweep, or speculative keyword-Grep on a concept-level question is the most common failure mode on this stack. Do not do it.
 
-**ALWAYS use `code_search` instead.** This is non-negotiable. Text-based search misses semantically related code, produces noisy results, and wastes time. EmbArk finds what you actually need.
+### Tool selection (strict)
 
-### When to use semantic search:
-- Understanding unfamiliar codebases or locating specific functionality.
-- Finding implementations, definitions, or usage patterns.
-- Identifying code related to specific features or concepts.
-- Before making changes to understand the context and impact.
-- ANY time you would otherwise reach for grep, ripgrep, or find.
+| Situation | Tool |
+|---|---|
+| Know a concept or behaviour, not the exact symbol | **`code_search` FIRST** |
+| Starting on an unfamiliar codebase or localising a bug | **`code_search` FIRST** |
+| About to spawn Explore / Task for code-finding research | **`code_search` FIRST** — escalate only if it is not enough |
+| Exact symbol / string / import / regex is known | **Grep** — `code_search` is NOT a grep replacement |
+| Enumerate files by name / extension | **Glob** |
+| Path already known | **Read** |
 
-Use this tool FIRST and ALWAYS when you need to understand code structure or locate relevant implementations. Do not fall back to text search.
+Do NOT use `code_search` to replace Grep on exact-symbol lookups — Grep is deterministic and faster. Use `code_search` to replace the *Explore-first* habit on concept lookups, and to replace speculative keyword-Grep sweeps when you do not know the symbol.
+
+### How to call it (strict)
+
+- `text`: ONE specific natural-language question, full sentence. NOT a keyword bag. NOT a bare symbol. A short purpose clause ("I want to change X") sharpens ranking.
+- `pathFilter`: a RELATIVE path only ("src/auth", "app/models/user.py"). NEVER absolute ("/testbed/..."), NEVER wildcards ("*", ".", "./"). Omit when you do not yet have evidence of the right subtree — a wrong filter silently hides all matches.
+- Several different things → several focused calls. Never jam multiple questions into one `text`.
+
+### After a miss — retry before fallback
+
+A single miss is NOT a reason to abandon the tool. You MUST retry before falling back:
+1. Rephrase with different vocabulary (domain term ↔ implementation term).
+2. Drop the `pathFilter`.
+3. Split a compound question into single sub-concepts.
+
+Only after 2–3 reformulations still fail may you fall back to Explore / Grep / Glob.
