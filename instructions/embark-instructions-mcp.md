@@ -2,54 +2,45 @@
 
 ## Semantic Code Search: `code_search`
 
-The `code_search` MCP tool performs search over the indexed codebase.
-Given a natural-language query it returns ranked snippets (path + line numbers + code snippet).
+`code_search` is an MCP tool that performs semantic search over the indexed codebase.
+Given a natural-language question it returns ranked snippets (path + line numbers + code).
 Ranking considers semantic meaning as well as symbol, file, and directory names.
 
-### Where it fits among your search tools
+### Which search tool fits which question?
 
-Before searching, ask yourself what *shape* of answer you need:
+Before searching, ask yourself: *what Grep query would I write to answer
+this?*
 
-| Shape of the question                                                           | Tool |
-|---------------------------------------------------------------------------------|---|
-| "How does X work?"                                                              | **`code_search`** |
-| "Where does behaviour Y live?"                                                  | **`code_search`** |
-| "Where are the tests for X?"                                                    | **`code_search`** |
-| "Which components are involved in Z?"                                           | **`code_search`** |
-| "Where is this exact symbol / string / import / regex *defined or used*?"       | **Grep** |
-| "Which files match this name or extension?"                                     | **Glob** |
-| "Open this specific file."                                                      | **Read** |
-| "Research this across many files and synthesize." — multi-round, needs planning | **Explore / Task subagent**, optionally seeded by one `code_search` call |
+| What your Grep query would look like | Tool |
+|---|---|
+| A specific symbol, literal, or tight regex that will uniquely identify the target (`class EmailService`, `@JsonTypeInfo`, `DEFAULT_TIMEOUT_MS`) | **Grep** |
+| A fuzzy concept word you'd expect to match too much or miss synonyms (`payment`, `retry`, `auth`, `handler`), OR you do not yet know what symbol to Grep for | **`code_search`** |
+| Enumerating files by name or extension | **Glob** |
+| Path is already known | **Read** |
+| Genuinely open-ended research — multi-round, needs planning | **Explore / Task subagent**, optionally seeded by one `code_search` call first |
 
-The deciding factor is the *shape of the question*, not whether a symbol is already named in the task. 
-For example:
-- "Find `EmailService`" is a location question, so use Grep.
-- "How does `EmailService` coordinate with the retry controller during partial failures?" is a behaviour question even though `EmailService` is named - use `code_search`.
+The factor is **the precision of the Grep input you'd need**, not whether the question is locational or behavioural and not whether a symbol is named in the prompt.
+"Find `EmailService`" has a precise Grep input (`class EmailService`) — use Grep.
+"Find the class that handles payment processing" has a fuzzy Grep input (`payment` matches everything in a microservices repo) — use `code_search` even though it's also a location question.
 
 Important note on the tooling decision boundary:
 `code_search` and Grep are stages, not alternatives.
 When `code_search` is your first move, Grep typically follows to narrow within the files it surfaced — not to replace the initial search.
 
+### Typical workflow for a task on unfamiliar code
 
-### How to call it
-- A single specific natural-language query describing ONE thing to find. Specify:
-  - WHAT you want to find — the class, behaviour, interaction, or concept.
-  - WHY you want it (optional but helpful) — a short purpose clause of the search.
-- (Optional) A path RELATIVE to the project root, used to scope the search to a subdirectory or single file. Omit or leave empty to search the whole project.
-  - Must be relative. Do NOT pass absolute paths ("/testbed/...", "/Users/..."), leading slashes, or shell-style values ("*", "./", ".").
-  - No wildcards — the filter is a path prefix or file path, not a glob.
-- If you need several different things, make separate calls instead.
-- Avoid in queries:
-  - Single words or short keywords: "email", "auth", "timeout".
-  - Noun phrases without a verb: "batch importer for bibliographic records". Rewrite as "Where is the batch importer that transforms bibliographic records into the normalized line format?"
-  - Keyword bags joined with no connectives: "product composite REST controller integration service reviews productId openapi tests".
+1. One focused `code_search` question to locate the area of interest.
+2. `Read` the top-ranked files for context.
+3. `Grep` for precise symbol or usage follow-up within those files.
+4. `Edit` / `Write` once the target is confirmed.
 
 ### If a call returns no useful results
 
-Do not abandon the tool after one miss. Retry with a reformulation:
-1. Rephrase using different vocabulary.
-2. Remove `pathFilter` if you had set one - a wrong path silently hides matches.
-3. Decompose a compound question into its single sub-concept calls.
+Do not abandon the tool after one miss. Reformulate:
+
+1. Rephrase using different vocabulary (domain term ↔ implementation term).
+2. Remove `pathFilter` if you had set one — a wrong filter silently hides matches.
+3. Split a compound question into separate focused calls.
 
 Fall back to Grep / Glob / Explore only after 2–3 reformulations still fail.
 

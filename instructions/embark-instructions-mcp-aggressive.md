@@ -1,42 +1,96 @@
 # Tools
 
-## Semantic Code Search: `code_search` (EmbArk)
+## Semantic Code Search: `code_search`
 
-The `code_search` MCP tool performs semantic search over the indexed codebase. On any code-search task where you know the concept, behaviour, or feature but NOT the exact symbol, `code_search` is MANDATORY and comes FIRST.
+Use `code_search` to search the indexed codebase by meaning.
 
-### Hard ordering rules
+Before searching, ask yourself what Grep query you would actually write.
 
-On a concept-level code-search task you MUST:
-1. Call `code_search` with a focused natural-language question FIRST.
-2. Retry with a reformulation if the first call misses (2–3 attempts).
-3. Escalate to Explore / Task / broad Grep ONLY after reformulations still fail.
+### Mandatory decision boundary
 
-Skipping `code_search` and jumping straight to Explore, Task, Glob-sweep, or speculative keyword-Grep on a concept-level question is the most common failure mode on this stack. Do not do it.
+You MUST start with `code_search` when the task is to find existing code by behavior, responsibility, interaction, or pattern and the exact symbol, file, or literal text is not yet known.
 
-### Tool selection (strict)
+You MUST NOT start with `code_search` when the task already gives a precise anchor, such as:
+- an exact symbol name
+- an exact string or import
+- a file path
+- a test name
+- a config key
+- a stack-trace fragment
+- a tight regex
+- a likely directory to inspect directly
 
-| Situation | Tool |
-|---|---|
-| Know a concept or behaviour, not the exact symbol | **`code_search` FIRST** |
-| Starting on an unfamiliar codebase or localising a bug | **`code_search` FIRST** |
-| About to spawn Explore / Task for code-finding research | **`code_search` FIRST** — escalate only if it is not enough |
-| Exact symbol / string / import / regex is known | **Grep** — `code_search` is NOT a grep replacement |
-| Enumerate files by name / extension | **Glob** |
-| Path already known | **Read** |
+In those cases, use **Grep** / **Glob** / **Read** instead.
 
-Do NOT use `code_search` to replace Grep on exact-symbol lookups — Grep is deterministic and faster. Use `code_search` to replace the *Explore-first* habit on concept lookups, and to replace speculative keyword-Grep sweeps when you do not know the symbol.
+Use **Glob** when you need files by name or extension.  
+Use **Read** when the path is already known.  
+Use **Explore / Task** for broad multi-file synthesis, optionally seeded by one `code_search` call.
 
-### How to call it (strict)
+`code_search` and Grep are stages, not substitutes.  
+When `code_search` is the first move, Grep usually follows to narrow within the files it surfaced.
 
-- `text`: ONE specific natural-language question, full sentence. NOT a keyword bag. NOT a bare symbol. A short purpose clause ("I want to change X") sharpens ranking.
-- `pathFilter`: a RELATIVE path only ("src/auth", "app/models/user.py"). NEVER absolute ("/testbed/..."), NEVER wildcards ("*", ".", "./"). Omit when you do not yet have evidence of the right subtree — a wrong filter silently hides all matches.
-- Several different things → several focused calls. Never jam multiple questions into one `text`.
+### Use `code_search` for these question types
 
-### After a miss — retry before fallback
+Use `code_search` when the real question is:
+- How does X work?
+- Where does behavior Y live?
+- Which components are involved in Z?
+- What pattern is used for W?
+- Which tests exercise behavior X?
+- Where is the analogous implementation of this behavior?
 
-A single miss is NOT a reason to abandon the tool. You MUST retry before falling back:
-1. Rephrase with different vocabulary (domain term ↔ implementation term).
-2. Drop the `pathFilter`.
-3. Split a compound question into single sub-concepts.
+Even if a symbol is named in the task, still use `code_search` when the question is behavioral or relational.
 
-Only after 2–3 reformulations still fail may you fall back to Explore / Grep / Glob.
+Examples:
+- `Find EmailService` → **Grep**
+- `How does EmailService coordinate with the retry controller during partial failures?` → **`code_search`**
+
+### How to call it
+
+For `text`:
+- Use one focused natural-language query for ONE concept.
+- Write a short question or sentence.
+- Add a short purpose clause only when it sharpens ranking.
+
+Good:
+- `How is pagination implemented in the products list endpoint?`
+- `Which tests exercise lambda-parameter indentation handling?`
+- `Where is outbound HTTP request timeout configured? I want to raise it to 30s.`
+- `How does the auth middleware validate the JWT before the controller?`
+
+Bad:
+- `email`
+- `class User`
+- `product composite REST controller integration service reviews productId openapi tests`
+- `How is auth done and where is pagination and what about caching?`
+
+For `pathFilter`:
+- Use it only when you already have evidence for the right directory or file.
+- It MUST be relative to the project root.
+- Omit it, or leave it empty, to search the whole project.
+- Never use absolute paths, leading slashes, `.`, `./`, `*`, or globs.
+
+Good:
+- `src/auth`
+- `services/payments`
+- `ktlint-ruleset-standard`
+- `app/models/user.py`
+
+Bad:
+- `/Users/...`
+- `/src/auth`
+- `.`
+- `./`
+- `*`
+- `src/auth/**`
+
+### After a miss
+
+Do not abandon semantic search after one miss.
+
+Retry in this order:
+1. Rephrase with different vocabulary.
+2. Remove `pathFilter`.
+3. Split a compound question into separate calls.
+
+After 1–2 retries, fall back to Grep / Glob / Explore if needed.
