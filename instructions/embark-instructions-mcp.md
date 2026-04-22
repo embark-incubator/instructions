@@ -1,77 +1,33 @@
 # Tools
 
-## Semantic Code Search: `code_search`
+## Semantic Code Search (EmbArk)
 
-The `code_search` MCP tool performs search over the indexed codebase.
-Given a natural-language query it returns ranked snippets (path + line numbers + code snippet).
-Ranking considers semantic meaning as well as symbol, file, and directory names.
+You have access to the `mcp__embark-mcp__semantic_code_search` tool for searching the codebase semantically.
+This tool can search for code snippets related in meaning to the search query and search objective.
 
-### Where it fits among your search tools
+### When to use semantic search:
+- Understanding unfamiliar codebases or locating specific functionality.
+- Finding implementations, definitions, or usage patterns.
+- Identifying code related to specific features or concepts.
+- Before making changes to understand the context and impact.
 
-Before searching, ask yourself what *shape* of answer you need:
+### Usage rules:
+- The tool searches by MEANING, not just exact string matches.
+- The tool takes the `text` parameter that should combine both what you're looking for and why:
+    - Construct the `text` parameter by combining: what to find + search objective.
+    - Make search objective in the query specific and self-contained, describe what you are trying to achieve by search and how the search results should help.
+    - Objective should always provide an additional context of the query, describing the higher-level task.
+- The tool optionally takes the `pathFilter` parameter to narrow the search to a specific directory or file:
+   - Using `pathFilter` dramatically improves search relevance and precision.
+   - Semantic search without path constraints might return irrelevant results from unrelated modules.
+   - If not provided, the whole project is searched.
 
-| Shape of the question                                                           | Tool |
-|---------------------------------------------------------------------------------|---|
-| "How does X work?"                                                              | **`code_search`** |
-| "Where does behaviour Y live?"                                                  | **`code_search`** |
-| "Where are the tests for X?"                                                    | **`code_search`** |
-| "Which components are involved in Z?"                                           | **`code_search`** |
-| "Where is this exact symbol / string / import / regex *defined or used*?"       | **Grep** |
-| "Which files match this name or extension?"                                     | **Glob** |
-| "Open this specific file."                                                      | **Read** |
-| "Research this across many files and synthesize." — multi-round, needs planning | **Explore / Task subagent**, optionally seeded by one `code_search` call |
+### Examples:
+- `"text"="Refactor `MyFunction` to handle async operations", "pathFilter"="path/to/module"`: Searches `MyFunction` within the specified directory for refactoring.
+- `"text"="Find `authorization` to add OAuth2 support to existing auth system", "pathFilter"="path/to/file/example.kt"`: Searches `authorization` inside the specified file to add OAuth2 support.
+- `"text"="Find `class User` to add email validation to user model"`: Finds the definition of class `User` to add email validation.
+- `"text"="Find `class User` to add email validation to user model", "pathFilter"="path/to/file/example.kt"`: Finds the definition of class `User` inside the specified file to add email validation.
+- `"text"="Locate query with retries to improve error handling in database queries"`: Searches for anything containing `query*with*retries` in directory names, filenames, symbol names and semantic matches by meaning. It also returns a code line with the exact phrase `query with retries`.
+- `"text"="Find `fun getConfig` to change default headers in authentication", "pathFilter"="path/to/module/submodule"`: Searches for `fun getConfig` within the specified directory `path/to/module/submodule` to change the default headers in authentication.
 
-The deciding factor is the *shape of the question*, not whether a symbol is already named in the task. 
-For example:
-- "Find `EmailService`" is a location question, so use Grep.
-- "How does `EmailService` coordinate with the retry controller during partial failures?" is a behaviour question even though `EmailService` is named - use `code_search`.
-
-Important note on the tooling decision boundary:
-`code_search` and Grep are stages, not alternatives.
-When `code_search` is your first move, Grep typically follows to narrow within the files it surfaced — not to replace the initial search.
-
-
-### How to call it
-- A single specific natural-language query describing ONE thing to find. Specify:
-  - WHAT you want to find — the class, behaviour, interaction, or concept.
-  - WHY you want it (optional but helpful) — a short purpose clause of the search.
-- (Optional) A path RELATIVE to the project root, used to scope the search to a subdirectory or single file. Omit or leave empty to search the whole project.
-  - Must be relative. Do NOT pass absolute paths ("/testbed/...", "/Users/..."), leading slashes, or shell-style values ("*", "./", ".").
-  - No wildcards — the filter is a path prefix or file path, not a glob.
-- If you need several different things, make separate calls instead.
-- Avoid in queries:
-  - Single words or short keywords: "email", "auth", "timeout".
-  - Noun phrases without a verb: "batch importer for bibliographic records". Rewrite as "Where is the batch importer that transforms bibliographic records into the normalized line format?"
-  - Keyword bags joined with no connectives: "product composite REST controller integration service reviews productId openapi tests".
-
-### If a call returns no useful results
-
-Do not abandon the tool after one miss. Retry with a reformulation:
-1. Rephrase using different vocabulary.
-2. Remove `pathFilter` if you had set one - a wrong path silently hides matches.
-3. Decompose a compound question into its single sub-concept calls.
-
-Fall back to Grep / Glob / Explore only after 2–3 reformulations still fail.
-
-### Example calls 
-
-Good queries:
-```json
-{ "text": "How does `EmailService` coordinate with the retry controller during partial failures? I want to add exponential backoff.", "pathFilter": "" }                                           
-{ "text": "How do other REST controllers integrate with `FeatureFlagsService`? I want to match the existing wrapper pattern.", "pathFilter": "" }                                                  
-{ "text": "Which services consume events emitted by `PaymentHandler`?", "pathFilter": "" }                                                           
-{ "text": "Which tests exercise `IndentationRule` lambda-parameter handling?", "pathFilter": "ktlint" }  
-{ "text": "How is pagination implemented in the products list endpoint?", "pathFilter": "services/products" }
-{ "text": "Where is the request timeout configured for outbound HTTP calls?", "pathFilter": "" }
-{ "text": "How does the auth middleware validate the JWT before the controller? I want to add an audience check.", "pathFilter": "src/auth" }
-{ "text": "Which function parses URL query parameters?", "pathFilter": "" }
-{ "text": "Where is the email validation rule on the user model defined? I want to loosen it.", "pathFilter": "app/models" }
-```
-
-Bad queries:
-```json
-{ "text": "email", "pathFilter": "" }
-{ "text": "class User", "pathFilter": "." }
-{ "text": "product composite REST controller integration service reviews productId openapi tests", "pathFilter": "" }
-{ "text": "How is auth done and where is pagination and what about caching?", "pathFilter": "*" }
-```
+Use this tool proactively when you need to understand code structure or locate relevant implementations.
