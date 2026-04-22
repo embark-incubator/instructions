@@ -1,17 +1,25 @@
-Semantic code search over the indexed codebase. Takes a natural-language question, returns a ranked list of code snippets (file path, line numbers, code). Ranking considers semantic meaning AND symbol / file / directory names — you do not need to know the exact names to find the code.
+Semantic code search over the indexed codebase.
+Takes a natural-language query, returns a ranked list of code snippets (file path, line numbers, code) relevant to the query.
+Ranking considers semantic meaning AND symbol / file / directory names — the query can describe what you want even if you do not know the exact names.
 
-PREFERRED FIRST STEP when you know the concept or behaviour but not the exact symbols, especially on an unfamiliar codebase. One focused semantic search is typically faster than enumerating files or spawning a research subagent.
+Use this tool to answer questions whose shape is:
+- "How does X work?"
+- "Where in the codebase does behaviour Y live?"
+- "Which components are involved in Z?"
+- "What pattern is used for W?"
+- "What is the role of X in Y?"
+- "Where is the test suit for X?"
 
-Examples of questions this tool answers well:
-- "Where is the request timeout configured for outbound HTTP calls?"
-- "Which function parses URL query parameters and how does it handle empty values?"
-- "How does the worker retry failed jobs after a timeout?"
+Use Grep / Glob / Read instead when the question is:
+- "Where is this exact symbol / string / import defined?"
+- "Which files match this name or extension?"
+- "Open this specific path."
 
-Decision boundary with other search tools:
-- Known exact symbol / string / import / regex → use Grep (deterministic and faster).
-- Enumerate files by name or extension → use Glob.
-- Already have the file path → use Read.
-- One or a few focused questions could answer the need → use this tool.
-- Genuinely open-ended research requiring many rounds of searching and synthesis → spawn the Explore/Task subagent; optionally seed it with one call to this tool first.
+The deciding factor is the shape of the question, not whether you already know a symbol name.
+For example:
+- "Find EmailService" is a location question (Grep).
+- "How does EmailService coordinate with the retry controller during partial failures?" is a behaviour question even though EmailService is named — use
+this tool (code search).
 
-If a call returns nothing useful, do not abandon the tool. Retry with a reformulation (different vocabulary, no pathFilter, or split a compound question). Fall back to Grep / Glob / Explore only after 2–3 reformulations still fail.
+If a query returns nothing useful, reformulate the query (different vocabulary, drop the path filter, split compound questions into separate calls).
+Do not give up after one miss.

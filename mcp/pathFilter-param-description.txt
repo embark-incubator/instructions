@@ -1,4 +1,4 @@
-Optional. A path RELATIVE to the project root, used to scope the search to a subdirectory or single file. Omit or leave empty to search the whole project.
+(Optional) A path RELATIVE to the project root, used to scope the search to a subdirectory or single file. Omit or leave empty to search the whole project.
 
 Rules:
 - Must be relative. Do NOT pass absolute paths ("/testbed/...", "/Users/..."), leading slashes, or shell-style values ("*", "./", ".").
@@ -7,10 +7,11 @@ Rules:
 When to set it:
 - You have evidence from the task description or a prior search that the relevant code lives under a specific directory or file.
 
-When NOT to set it:
-- You have no prior evidence of the right location — search unfiltered so the ranker sees the whole corpus. Guessing a directory and being wrong silently hides all relevant results.
+When to omit it:
+- You have no prior evidence of the right subtree - search unfiltered so the ranker sees the whole corpus.
+- Guessing a directory and being wrong - a wrong filter silently hides every match, so only scope when you are confident.
 
-Examples:
+Examples of good path filters:
 - "src/auth"                              — scope to a directory subtree
 - "services/payments/stripe_client.py"    — scope to a single file
 - ""  (or omit)                           — search the whole project
