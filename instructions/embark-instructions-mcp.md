@@ -1,6 +1,7 @@
 ## `code_search` - Semantic Code Search
 
-`code_search` (also available as `mcp__embark__code_search`) is the primary tool for code exploration and search.
+You have access to the EmbArk MCP `code_search` tool for searching the codebase semantically.
+This tool can search for code snippets related in meaning to the search query and search objective.
 
 ### When to Use code_search
 
@@ -53,9 +54,3 @@ Bad:
 - **Describe intent**, not implementation: "handles user login" not "func Login"
 - **Be specific**: "JWT token validation" better than "token"
 - Results include: file path, line numbers, code preview
-
-### Workflow
-
-1. Start with `code_search` to find relevant code
-2. Use `Read` to examine files from the results
-3. Use Grep for exact string searches when needed
