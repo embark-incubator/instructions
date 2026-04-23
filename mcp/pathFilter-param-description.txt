@@ -1,4 +1,6 @@
-(Optional) A path RELATIVE to the project root, used to scope the search to a subdirectory or single file. Omit or leave empty to search the whole project.
+(Optional)
+A path RELATIVE to the project root, used to scope the search to a subdirectory or single file.
+Omit or leave empty to search the whole project.
 
 Rules:
 - Must be relative. Do NOT pass absolute paths ("/testbed/...", "/Users/..."), leading slashes, or shell-style values ("*", "./", ".").

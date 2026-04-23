@@ -1,5 +1,5 @@
 A single specific natural-language query describing ONE thing to find.
-Write a full sentence, the way you would ask a senior engineer unfamiliar with the specific file.
+Write a full sentence, the way you would ask a senior engineer colleague.
 
 Two pieces fit in one sentence:
 1. WHAT you want to find — the class, behaviour, interaction, or concept.
@@ -7,9 +7,12 @@ Two pieces fit in one sentence:
 
 GOOD QUERIES:
 - "Where is the outbound HTTP request timeout configured? I want to raise it to 30s."
-- "Which class handles payment processing for card transactions - there may be several payment handlers in the codebase."
+- "Which class handles payment processing for card transactions?"
 - "How does the parser handle empty query strings versus missing query strings?"
-- "Which services publish events on entity update, and what topic-naming convention do they use?"
+- "Which services publish events on entity update?"
+- "How does `EmailService` coordinate with the retry controller during partial failures? I want to add exponential backoff."
+- "How do other REST controllers integrate with `FeatureFlagsService`?"
+- "Which services consume events emitted by `PaymentHandler`?"
 
 AVOID IN QUERIES:
 - Single words or short keywords: "email", "auth", "timeout".

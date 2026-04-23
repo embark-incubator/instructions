@@ -1,96 +1,61 @@
-# Tools
+## `code_search` - Semantic Code Search
 
-## Semantic Code Search: `code_search`
+**IMPORTANT: You MUST use `code_search` (or can be named as `mcp__embark__code_search`) MCP tool as your PRIMARY tool for code exploration and search.**
 
-Use `code_search` to search the indexed codebase by meaning.
+### When to Use code_search (REQUIRED)
 
-Before searching, ask yourself what Grep query you would actually write.
+Use `code_search` INSTEAD OF Grep/Glob/find for:
+- Understanding what code does or where functionality lives
+- Finding implementations by intent (e.g., "authentication logic", "error handling")
+- Exploring unfamiliar parts of the codebase
+- Any search where you describe WHAT the code does rather than exact text
 
-### Mandatory decision boundary
+### When to Use Standard Tools
 
-You MUST start with `code_search` when the task is to find existing code by behavior, responsibility, interaction, or pattern and the exact symbol, file, or literal text is not yet known.
+Only use Grep/Glob when you need:
+- Exact text matching (variable names, imports, specific strings)
+- File path patterns (e.g., `**/*.go`)
 
-You MUST NOT start with `code_search` when the task already gives a precise anchor, such as:
-- an exact symbol name
-- an exact string or import
-- a file path
-- a test name
-- a config key
-- a stack-trace fragment
-- a tight regex
-- a likely directory to inspect directly
+### Fallback
 
-In those cases, use **Grep** / **Glob** / **Read** instead.
+If `code_search` fails (not connected or errors), fall back to standard Grep/Glob tools.
 
-Use **Glob** when you need files by name or extension.  
-Use **Read** when the path is already known.  
-Use **Explore / Task** for broad multi-file synthesis, optionally seeded by one `code_search` call.
+### Usage
 
-`code_search` and Grep are stages, not substitutes.  
-When `code_search` is the first move, Grep usually follows to narrow within the files it surfaced.
+- Specify a focused search query
+- ALWAYS use English queries for best results
+- (Optional) Specify a path filter to scope the search to a subdirectory or single file to narrow down the search results
+  - Use it only when you already have evidence for the right directory or file
+  - It MUST be relative to the project root
+  - Omit it, or leave it empty, to search the whole project
+  - Never use absolute paths, leading slashes, `.`, `./`, `*`, or globs
 
-### Use `code_search` for these question types
+### Examples
 
-Use `code_search` when the real question is:
-- How does X work?
-- Where does behavior Y live?
-- Which components are involved in Z?
-- What pattern is used for W?
-- Which tests exercise behavior X?
-- Where is the analogous implementation of this behavior?
+GOOD:
+```json
+{ "text": "user authentication flow", "pathFilter": "" }
+{ "text": "how is pagination implemented in the products list endpoint?", "pathFilter": "services/products" }
+{ "text": "request timeout configured for outbound HTTP calls", "pathFilter": "" }
+{ "text": "which tests exercise `IndentationRule` lambda-parameter handling?", "pathFilter": "ktlint" }  
+```
 
-Even if a symbol is named in the task, still use `code_search` when the question is behavioral or relational.
+BAD:
+```json
+{ "text": "email", "pathFilter": "." }
+{ "text": "product composite REST controller integration service reviews productId openapi tests", "pathFilter": "" }
+{ "text": "how is auth done and where is pagination and what about caching?", "pathFilter": "*" }
+```
 
-Examples:
-- `Find EmailService` → **Grep**
-- `How does EmailService coordinate with the retry controller during partial failures?` → **`code_search`**
+### Query Tips
 
-### How to call it
+- **Use English** for queries (better semantic matching)
+- **Describe intent**, not implementation: "handles user login" not "func Login"
+- **Be specific**: "JWT token validation" better than "token"
+- Results include: file path, line numbers, code preview
 
-For `text`:
-- Use one focused natural-language query for ONE concept.
-- Write a short question or sentence.
-- Add a short purpose clause only when it sharpens ranking.
+### Workflow
 
-Good:
-- `How is pagination implemented in the products list endpoint?`
-- `Which tests exercise lambda-parameter indentation handling?`
-- `Where is outbound HTTP request timeout configured? I want to raise it to 30s.`
-- `How does the auth middleware validate the JWT before the controller?`
-
-Bad:
-- `email`
-- `class User`
-- `product composite REST controller integration service reviews productId openapi tests`
-- `How is auth done and where is pagination and what about caching?`
-
-For `pathFilter`:
-- Use it only when you already have evidence for the right directory or file.
-- It MUST be relative to the project root.
-- Omit it, or leave it empty, to search the whole project.
-- Never use absolute paths, leading slashes, `.`, `./`, `*`, or globs.
-
-Good:
-- `src/auth`
-- `services/payments`
-- `ktlint-ruleset-standard`
-- `app/models/user.py`
-
-Bad:
-- `/Users/...`
-- `/src/auth`
-- `.`
-- `./`
-- `*`
-- `src/auth/**`
-
-### After a miss
-
-Do not abandon semantic search after one miss.
-
-Retry in this order:
-1. Rephrase with different vocabulary.
-2. Remove `pathFilter`.
-3. Split a compound question into separate calls.
-
-After 1–2 retries, fall back to Grep / Glob / Explore if needed.
+1. Start with `code_search` to find relevant code
+2. Use `Read` tool to examine files from results
+3. Only use Grep for exact string searches if needed

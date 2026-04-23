@@ -1,68 +1,61 @@
-# Tools
+## `code_search` - Semantic Code Search
 
-## Semantic Code Search: `code_search`
+`code_search` (also available as `mcp__embark__code_search`) is the primary tool for code exploration and search.
 
-`code_search` is an MCP tool that performs semantic search over the indexed codebase.
-Given a natural-language question it returns ranked snippets (path + line numbers + code).
-Ranking considers semantic meaning as well as symbol, file, and directory names.
+### When to Use code_search
 
-### Which search tool fits which question?
+Prefer `code_search` over Grep/Glob/find for:
+- Understanding what code does or where functionality lives
+- Finding implementations by intent (e.g., "authentication logic", "error handling")
+- Exploring unfamiliar parts of the codebase
+- Any search where you describe what the code does rather than exact text
 
-Before searching, ask yourself: *what Grep query would I write to answer
-this?*
+### When to Use Standard Tools
 
-| What your Grep query would look like | Tool |
-|---|---|
-| A specific symbol, literal, or tight regex that will uniquely identify the target (`class EmailService`, `@JsonTypeInfo`, `DEFAULT_TIMEOUT_MS`) | **Grep** |
-| A fuzzy concept word you'd expect to match too much or miss synonyms (`payment`, `retry`, `auth`, `handler`), OR you do not yet know what symbol to Grep for | **`code_search`** |
-| Enumerating files by name or extension | **Glob** |
-| Path is already known | **Read** |
-| Genuinely open-ended research — multi-round, needs planning | **Explore / Task subagent**, optionally seeded by one `code_search` call first |
+Use Grep/Glob when you need:
+- Exact text matching (variable names, imports, specific strings)
+- File path patterns (e.g., `**/*.go`)
 
-The factor is **the precision of the Grep input you'd need**, not whether the question is locational or behavioural and not whether a symbol is named in the prompt.
-"Find `EmailService`" has a precise Grep input (`class EmailService`) — use Grep.
-"Find the class that handles payment processing" has a fuzzy Grep input (`payment` matches everything in a microservices repo) — use `code_search` even though it's also a location question.
+### Fallback
 
-Important note on the tooling decision boundary:
-`code_search` and Grep are stages, not alternatives.
-When `code_search` is your first move, Grep typically follows to narrow within the files it surfaced — not to replace the initial search.
+If `code_search` is unavailable or errors out, fall back to standard Grep/Glob tools.
 
-### Typical workflow for a task on unfamiliar code
+### Usage
 
-1. One focused `code_search` question to locate the area of interest.
-2. `Read` the top-ranked files for context.
-3. `Grep` for precise symbol or usage follow-up within those files.
-4. `Edit` / `Write` once the target is confirmed.
+- Specify a focused search query
+- Use English queries for best results
+- (Optional) Specify a path filter to scope the search to a subdirectory or single file to narrow down the results
+  - Use it only when you already have evidence for the right directory or file
+  - It must be relative to the project root
+  - Omit it, or leave it empty, to search the whole project
+  - Do not use absolute paths, leading slashes, `.`, `./`, `*`, or globs
 
-### If a call returns no useful results
+### Examples
 
-Do not abandon the tool after one miss. Reformulate:
-
-1. Rephrase using different vocabulary (domain term ↔ implementation term).
-2. Remove `pathFilter` if you had set one — a wrong filter silently hides matches.
-3. Split a compound question into separate focused calls.
-
-Fall back to Grep / Glob / Explore only after 2–3 reformulations still fail.
-
-### Example calls 
-
-Good queries:
+Good:
 ```json
-{ "text": "How does `EmailService` coordinate with the retry controller during partial failures? I want to add exponential backoff.", "pathFilter": "" }                                           
-{ "text": "How do other REST controllers integrate with `FeatureFlagsService`? I want to match the existing wrapper pattern.", "pathFilter": "" }                                                  
-{ "text": "Which services consume events emitted by `PaymentHandler`?", "pathFilter": "" }                                                           
-{ "text": "Which tests exercise `IndentationRule` lambda-parameter handling?", "pathFilter": "ktlint" }  
-{ "text": "How is pagination implemented in the products list endpoint?", "pathFilter": "services/products" }
-{ "text": "Where is the request timeout configured for outbound HTTP calls?", "pathFilter": "" }
-{ "text": "How does the auth middleware validate the JWT before the controller? I want to add an audience check.", "pathFilter": "src/auth" }
-{ "text": "Which function parses URL query parameters?", "pathFilter": "" }
-{ "text": "Where is the email validation rule on the user model defined? I want to loosen it.", "pathFilter": "app/models" }
+{ "text": "user authentication flow", "pathFilter": "" }
+{ "text": "how is pagination implemented in the products list endpoint?", "pathFilter": "services/products" }
+{ "text": "request timeout configured for outbound HTTP calls", "pathFilter": "" }
+{ "text": "which tests exercise `IndentationRule` lambda-parameter handling?", "pathFilter": "ktlint" }
 ```
 
-Bad queries:
+Bad:
 ```json
-{ "text": "email", "pathFilter": "" }
-{ "text": "class User", "pathFilter": "." }
+{ "text": "email", "pathFilter": "." }
 { "text": "product composite REST controller integration service reviews productId openapi tests", "pathFilter": "" }
-{ "text": "How is auth done and where is pagination and what about caching?", "pathFilter": "*" }
+{ "text": "how is auth done and where is pagination and what about caching?", "pathFilter": "*" }
 ```
+
+### Query Tips
+
+- **Use English** for queries (better semantic matching)
+- **Describe intent**, not implementation: "handles user login" not "func Login"
+- **Be specific**: "JWT token validation" better than "token"
+- Results include: file path, line numbers, code preview
+
+### Workflow
+
+1. Start with `code_search` to find relevant code
+2. Use `Read` to examine files from the results
+3. Use Grep for exact string searches when needed
