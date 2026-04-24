@@ -1,43 +1,61 @@
-# Tools
+## `embark search` - Semantic Code Search
 
-## Semantic Code Search (EmbArk)
+Use `embark search` for searching the code semantically using natural language queries.
+`embark search` understands code meaning, not just text patterns.
 
-You have access to `embark search` for searching the codebase semantically.
-It finds code by meaning, not just keywords.
+### When to Use `embark search`
+
+Prefer `embark search` over Grep/Glob/find for:
+- Understanding what code does or where functionality lives
+- Finding implementations by intent (e.g., "authentication logic", "error handling")
+- Exploring unfamiliar parts of the codebase
+- Any search where you describe what the code does rather than exact text
+
+### When to Use Standard Tools
+
+Use Grep/Glob when you need:
+- Exact text matching (variable names, imports, specific strings)
+- File path patterns (e.g., `**/*.go`)
+
+### Fallback
+
+If `embark search` is unavailable or errors out, fall back to standard Grep/Glob tools.
 
 ### Usage
 
+- Specify a focused search query
+- Use English queries for best results
+- (Optional) Specify a path filter to scope the search to a subdirectory or single file to narrow down the results
+  - Use it only when you already have evidence for the right directory or file
+  - It must be relative to the project root
+  - Omit it, or leave it empty, to search the whole project
+  - Do not use absolute paths, leading slashes, `.`, `./`, `*`, or globs
+
 ```bash
-embark search "<detailed and descriptive query>"
-embark search -p <path> "<query>"  # <path> must be relative to the project root
+embark search "<QUERY>"
+embark search -p "<PATH>" "<QUERY>"  # <PATH> must be relative to the project root
+```
+
+### Examples
+
+GOOD:
+```bash
+embark search "user authentication flow"
+embark search -p "services/products" "how is pagination implemented in the products list endpoint?"
+embark search "request timeout configured for outbound HTTP calls"
+embark search -p "ktlint" "which tests exercise `IndentationRule` lambda-parameter handling?"
+```
+
+BAD:
+```bash
+embark search -p "." "email"
+embark search "product composite REST controller integration service reviews productId openapi tests"
+embark search -p "*" "how is auth done and where is pagination and what about caching?"
 ```
 
 ### Query Tips
 
-- Be descriptive: "function that validates user email addresses" > "email"
-- Include context: "error handling middleware for HTTP requests with logging"
-- Specify what you're looking for: "React component that renders a modal dialog"
-
-### When to use semantic search:
-- Understanding unfamiliar codebases or locating specific functionality.
-- Finding implementations, definitions, or usage patterns.
-- Identifying code related to specific features or concepts.
-- Before making changes to understand the context and impact.
-
-### Examples
-
-```bash
-# Find authentication-related code
-embark search "user authentication login flow"
-
-# Narrow to specific directory
-embark search -p src/auth "JWT token validation"
-
-# Find callers of a function
-embark search "calls to handleRequest to understand impact"
-
-# Find related tests
-embark search -p test "tests for authentication middleware"
-```
-
-Use `embark search` proactively when you need to understand code structure or locate relevant implementations.
+- **Use English** for queries (better semantic matching)
+- **Describe intent**, not implementation: "handles user login" not "func Login"
+- **Be specific**: "JWT token validation" better than "token"
+- Results include: file path, line numbers, code preview

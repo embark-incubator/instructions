@@ -6,100 +6,62 @@ allowed-tools: ["Bash"]
 
 # embark-search - Semantic Code Search
 
-Use `embark-search` to search code semantically using natural-language queries. `embark-search` understands code meaning, not just text patterns.
+Use `embark-search` to search code semantically using natural-language queries.
+`embark-search` understands code meaning, not just text patterns.
 
-## When to Use
+## When to Use `embark search`
 
-- Finding code by concept or functionality ("where do we handle authentication?")
-- Discovering related code patterns ("show me retry logic")
-- Exploring codebase structure ("how is the database connection managed?")
-- Searching for implementation patterns ("where do we validate user input?")
+Prefer `embark search` over Grep/Glob/find for:
+- Understanding what code does or where functionality lives
+- Finding implementations by intent (e.g., "authentication logic", "error handling")
+- Exploring unfamiliar parts of the codebase
+- Any search where you describe what the code does rather than exact text
 
-## Basic Usage
+## When to Use Standard Tools
 
-### Search Command
+Use Grep/Glob when you need:
+- Exact text matching (variable names, imports, specific strings)
+- File path patterns (e.g., `**/*.go`)
+
+## Fallback
+
+If `embark search` is unavailable or errors out, fall back to standard Grep/Glob tools.
+
+## Usage
+
+- Specify a focused search query
+- Use English queries for best results
+- (Optional) Specify a path filter to scope the search to a subdirectory or single file to narrow down the results
+  - Use it only when you already have evidence for the right directory or file
+  - It must be relative to the project root
+  - Omit it, or leave it empty, to search the whole project
+  - Do not use absolute paths, leading slashes, `.`, `./`, `*`, or globs
 
 ```bash
-embark search "your natural language query"
+embark search "<QUERY>"
+embark search -p <PATH> "<QUERY>"  # <PATH> must be relative to the project root
 ```
-
-### Common Patterns
-
-**Find functionality:**
-```bash
-embark search "where do we handle user authentication?"
-```
-
-**Search in a specific path:**
-```bash
-embark search -p "src/main/kotlin" "serialization configuration"
-```
-
-**Get more results:**
-```bash
-embark search --limit 50 "database queries"
-```
-
-**Search definitions and declarations:**
-```bash
-embark search --index-alias symbols "email validation function"
-```
-
-**Quick scan with filenames only:**
-```bash
-embark search --renderer filenames "API rate limiting"
-```
-
-**Show code snippets for all results:**
-```bash
-embark search --renderer code_snippet "retry logic"
-```
-
-**Agent-friendly JSON output:**
-```bash
-embark search --json-output "logging configuration"
-```
-
-## Command Options
-
-- `--index-alias <value>`: Search `code-blocks`, `symbols`, or `files`
-- `--limit <n>`: Maximum results to return
-- `--path-filter <value>` / `-p <value>`: Restrict results to a path prefix. Must be relative. Do NOT pass absolute paths, leading slashes, or shell-style values ("*", "./", ".").
-- `--renderer <mode>`: Output mode: `hybrid`, `code_snippet`, or `filenames`
-- `--json-output`: Emit structured JSON output
 
 ## Examples
 
-**Find authentication code:**
+Good:
 ```bash
-embark search -p "auth/" "how do we authenticate users?"
+embark search "user authentication flow"
+embark search -p services/products "how is pagination implemented in the products list endpoint?"
+embark search "request timeout configured for outbound HTTP calls"
+embark search -p ktlint "which tests exercise `IndentationRule` lambda-parameter handling?"
 ```
 
-**Find error handling:**
+Bad:
 ```bash
-embark search "error handling of `Users` class"
+embark search -p . "email"
+embark search "product composite REST controller integration service reviews productId openapi tests"
+embark search -p * "how is auth done and where is pagination and what about caching?"
 ```
 
-**Search specific directories (combine multiple filters):**
-```bash
-embark search --limit 30 -p "src/" "API endpoint definitions of LLM models"
-```
+## Query Tips
 
-## Understanding Results
-
-Results vary by `--renderer`:
-
-- `hybrid`: Shows code snippets for high-relevance results and filenames for lower-relevance ones
-- `code_snippet`: Shows detailed result info with code previews for every result
-- `filenames`: Shows only similarity score and file path
-
-Use `symbols` when looking for declarations, `code-blocks` for implementation details, and `files` for broad discovery.
-
-## Best Practices
-
-1. Use natural-language queries, not just keywords. Ask questions like you would ask a colleague
-2. Start with `code-blocks` for behavior and implementation searches.
-3. Switch to `symbols` when looking for named declarations or definitions.
-4. Add `-p` to narrow the search space to a specific directory.
-5. Use `--renderer code_snippet` for inspection and scanning by default.
-6. Use `--json-output` for scripts, agents, and automated post-processing.
+- **Use English** for queries (better semantic matching)
+- **Describe intent**, not implementation: "handles user login" not "func Login"
+- **Be specific**: "JWT token validation" better than "token"
+- Results include: file path, line numbers, code preview
